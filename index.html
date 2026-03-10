@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Upload Card</title>
+  <style>
+    body {
+      background-color: #b3d9ff; /* Light blue background */
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .upload-card {
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      width: 250px;
+    }
+
+    .upload-icon {
+      font-size: 40px;
+      color: #333;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      font-weight: 600;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .upload-subtext {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 20px;
+    }
+
+    .upload-btn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .upload-btn:hover {
+      background-color: #0069d9;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="upload-card">
+    <div class="upload-icon">☁️</div>
+    <div class="upload-text">Upload Image</div>
+    <div class="upload-subtext">Image size must be less than 2MB</div>
+    
+    <!-- Hidden File Input -->
+    <input type="file" id="fileInput" accept="image/*">
+    
+    <!-- Button to trigger file input -->
+    <button class="upload-btn" onclick="document.getElementById('fileInput').click()">Select Image</button>
+    <br><br>
+    <!-- Upload Button -->
+    <button class="upload-btn" onclick="uploadFile()">Upload</button>
+  </div>
+
+
+  <script>
+    async function uploadFile() {
+      const fileInput = document.getElementById("fileInput");
+      const file = fileInput.files[0];
+      if (!file) return alert("Please select a file");
+
+      // Get presigned URL
+      const res = await fetch(`http://localhost:3000/get-url?fileName=${file.name}`);
+      if (!res.ok) {
+        alert("Failed to get presigned URL");
+        return;
+      }
+
+      const data = await res.json();
+
+      // Upload file to S3
+      await fetch(data.url, {
+        method: "PUT",
+        body: file,
+      });
+
+      alert("✅ File uploaded successfully!");
+    }
+  </script>
+</body>
+</html>
